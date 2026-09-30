@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>常用网址排行 · 设置</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main class="page">
+    <h1>常用网址排行 · 设置</h1>
+
+    <section class="card">
+      <h2>常规</h2>
+      <label class="field">
+        <span class="label">弹窗显示条数</span>
+        <input id="popup-limit" type="number" min="5" max="100" step="1">
+      </label>
+      <label class="field">
+        <span class="label">点击网址时</span>
+        <select id="open-in">
+          <option value="newTab">在新标签页打开</option>
+          <option value="currentTab">在当前标签页打开</option>
+        </select>
+      </label>
+      <label class="check">
+        <input id="strip-tracking" type="checkbox">
+        <span>
+          <strong>合并只差追踪参数的网址</strong>
+          <small>按网址统计时，忽略 utm_*、gclid、fbclid、spm 等参数</small>
+        </span>
+      </label>
+      <label class="check">
+        <input id="local-only" type="checkbox">
+        <span>
+          <strong>只统计本机访问</strong>
+          <small>排除从其他设备同步来的访问。只在选择 30 天 / 7 天 / 今天时生效，需要 Chrome 115 或更新版本</small>
+        </span>
+      </label>
+    </section>
+
+    <section class="card">
+      <h2>屏蔽的域名</h2>
+      <p class="hint">这些域名及其子域名不参与统计。一行一个，例如 <code>google.com</code>，也可以直接粘贴网址。</p>
+      <textarea id="exclude-domains" rows="6" spellcheck="false" placeholder="google.com&#10;baidu.com"></textarea>
+      <div class="actions">
+        <button id="save-excludes" class="primary" type="button">保存屏蔽列表</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>已隐藏</h2>
+      <ul id="hidden-list" class="key-list"></ul>
+      <p id="hidden-empty" class="hint">没有隐藏的条目。在弹窗中点某一行的 ⋯ → 隐藏，即可把它从列表中去掉。</p>
+    </section>
+
+    <section class="card">
+      <h2>已置顶</h2>
+      <ul id="pinned-list" class="key-list"></ul>
+      <p id="pinned-empty" class="hint">没有置顶的条目。</p>
+    </section>
+
+    <p class="footnote">所有统计都在本机完成，插件不会上传任何数据。</p>
+  </main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>

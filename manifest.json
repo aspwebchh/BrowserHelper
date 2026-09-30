@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "常用网址排行",
+  "version": "0.1.0",
+  "description": "从浏览历史中统计最常访问的网站和网址，按访问次数、输入次数、最近访问或综合常用度排序。数据只在本地处理。",
+  "permissions": ["history", "storage", "favicon"],
+  "action": {
+    "default_title": "常用网址排行",
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "src/options/options.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

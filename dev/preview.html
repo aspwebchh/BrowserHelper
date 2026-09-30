@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>扩展页面预览</title>
+  <!-- 先装上假的 chrome API，再载入真实页面 -->
+  <script src="mock-chrome.js"></script>
+</head>
+<body>
+  <!--
+    用法：/dev/preview.html?page=popup 或 ?page=options
+    读取 src/<page>/<page>.html 的样式和正文插入本页，再加载 <page>.js，界面代码不用复制一份。
+  -->
+  <script type="module">
+    const page = new URLSearchParams(location.search).get('page') === 'options' ? 'options' : 'popup';
+    const base = new URL(`../src/${page}/`, location.href);
+    const html = await (await fetch(new URL(`${page}.html`, base))).text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    document.title = `${doc.title}（预览）`;
+
+    for (const link of doc.querySelectorAll('link[rel="stylesheet"]')) {
+      const el = document.createElement('link');
+      el.rel = 'stylesheet';
+      el.href = new URL(link.getAttribute('href'), base).href;
+      const loaded = new Promise((resolve) => { el.onload = el.onerror = resolve; });
+      document.head.append(el);
+      await loaded;
+    }
+
+    doc.querySelectorAll('script').forEach((script) => script.remove());
+    document.body.replaceChildren(...[...doc.body.childNodes].map((node) => document.importNode(node, true)));
+    await import(new URL(`${page}.js`, base).href);
+  </script>
+</body>
+</html>

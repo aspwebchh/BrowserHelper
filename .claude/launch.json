@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "extension-preview",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["dev/serve.mjs"],
+      "port": 5178
+    }
+  ]
+}

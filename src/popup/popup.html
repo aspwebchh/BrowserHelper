@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>常用网址排行</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="toolbar">
+    <div class="search-row">
+      <input id="search" class="search" type="search" placeholder="搜索网址或标题…"
+             autocomplete="off" spellcheck="false" autofocus>
+      <button id="open-options" class="icon-btn" type="button" title="设置" aria-label="设置">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 0 0 .05-.94 7.07 7.07 0 0 0-.05-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.3.59.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/>
+        </svg>
+      </button>
+    </div>
+    <div class="filter-row">
+      <div class="segmented" id="group-by" role="radiogroup" aria-label="统计方式">
+        <button type="button" role="radio" data-value="domain">域名</button>
+        <button type="button" role="radio" data-value="url">网址</button>
+      </div>
+      <div class="segmented" id="range" role="radiogroup" aria-label="时间范围">
+        <button type="button" role="radio" data-value="all">全部</button>
+        <button type="button" role="radio" data-value="30d">30天</button>
+        <button type="button" role="radio" data-value="7d">7天</button>
+        <button type="button" role="radio" data-value="today">今天</button>
+      </div>
+      <select id="sort-by" class="sort" aria-label="排序方式">
+        <option value="visits">访问次数</option>
+        <option value="typed">输入次数</option>
+        <option value="recent">最近访问</option>
+        <option value="frecency">综合</option>
+      </select>
+    </div>
+  </header>
+
+  <main id="scroller" class="scroller">
+    <ol id="list" class="list" role="listbox" aria-label="常用网址"></ol>
+    <p id="empty" class="empty" hidden></p>
+  </main>
+
+  <footer id="status" class="status" aria-live="polite"></footer>
+
+  <div id="menu" class="menu" role="menu" hidden>
+    <button type="button" role="menuitem" data-action="copy">复制链接</button>
+    <button type="button" role="menuitem" data-action="pin">置顶</button>
+    <button type="button" role="menuitem" data-action="hide">隐藏</button>
+    <button type="button" role="menuitem" data-action="block">屏蔽该域名</button>
+  </div>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
