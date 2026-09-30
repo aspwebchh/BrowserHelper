@@ -83,8 +83,8 @@
       return {};
     }
   };
-  const emit = (changes) => {
-    for (const fn of listeners) fn(structuredClone(changes), 'local');
+  const emit = (changes, area = 'local') => {
+    for (const fn of listeners) fn(structuredClone(changes), area);
   };
   // 另一个预览标签页改了设置时，同步通知本页。
   window.addEventListener('storage', (e) => {
@@ -117,6 +117,27 @@
       },
     },
     storage: {
+      session: {
+        async get(keys) {
+          const data = JSON.parse(sessionStorage.getItem('mock-chrome-session') || '{}');
+          if (keys == null) return structuredClone(data);
+          if (typeof keys === 'string') keys = [keys];
+          return structuredClone(Object.fromEntries(keys.filter((key) => key in data).map((key) => [key, data[key]])));
+        },
+        async set(items) {
+          const data = JSON.parse(sessionStorage.getItem('mock-chrome-session') || '{}');
+          const changes = {};
+          for (const [key, value] of Object.entries(items)) {
+            changes[key] = { oldValue: data[key], newValue: value };
+            data[key] = value;
+          }
+          sessionStorage.setItem('mock-chrome-session', JSON.stringify(data));
+          emit(changes, 'session');
+        },
+        async clear() {
+          sessionStorage.removeItem('mock-chrome-session');
+        },
+      },
       local: {
         async get(keys) {
           const data = readStore();

@@ -1,5 +1,5 @@
 import { faviconUrl, formatCount, formatDateTime, formatRelativeTime } from '../core/format.js';
-import { fetchHistory } from '../core/history-source.js';
+import { createHistoryLoader } from '../core/history-loader.js';
 import { buildList } from '../core/pipeline.js';
 import { addToList, loadSettings, saveSettings, toggleInList } from '../core/settings.js';
 
@@ -23,7 +23,7 @@ const els = {
 
 const state = {
   settings: null,
-  cache: new Map(), // 时间范围 → Record[]，切换统计方式 / 排序 / 搜索时不重新读取
+  history: createHistoryLoader(),
   records: [],
   list: { pinned: [], ranked: [] },
   rows: [], // 当前渲染的 { entry, rank }，rank 为 0 表示置顶项
@@ -31,6 +31,8 @@ const state = {
   menuEntry: null,
   menuButton: null,
   loadToken: 0,
+  loadController: null,
+  loading: false,
 };
 
 init().catch(showFatal);
@@ -47,25 +49,33 @@ async function init() {
 
 async function reload() {
   const token = ++state.loadToken;
+  state.loadController?.abort();
+  const controller = new AbortController();
+  state.loadController = controller;
   const { range, localOnly } = state.settings;
-  const key = range === 'all' ? range : `${range}|${localOnly}`;
-  let records = state.cache.get(key);
-  if (!records) {
-    setLoading(true);
-    try {
-      records = await fetchHistory(range, {
-        localOnly,
-        onProgress: (done, total) => {
-          if (token === state.loadToken) els.status.textContent = `正在统计访问记录… ${done}/${total}`;
-        },
-      });
-    } catch (err) {
-      if (token === state.loadToken) showFatal(err);
-      return;
-    }
-    state.cache.set(key, records);
-    if (token !== state.loadToken) return; // 读取期间用户已切换到别的范围
+  let lastProgress = 0;
+  let records;
+  try {
+    records = await state.history.load(range, {
+      localOnly,
+      signal: controller.signal,
+      // 命中缓存时不进入加载状态，避免列表闪一下。
+      onFetchStart: () => {
+        if (token === state.loadToken) setLoading(true);
+      },
+      onProgress: (done, total) => {
+        const now = performance.now();
+        if (token === state.loadToken && (done === total || now - lastProgress >= 100)) {
+          lastProgress = now;
+          els.status.textContent = `正在统计访问记录… ${done}/${total}`;
+        }
+      },
+    });
+  } catch (err) {
+    if (token === state.loadToken && !controller.signal.aborted) showFatal(err);
+    return;
   }
+  if (token !== state.loadToken) return;
   setLoading(false);
   state.records = records;
   rebuild();
@@ -113,7 +123,7 @@ function render() {
   } else {
     showEmpty(state.records.length ? '列表为空：记录可能都被隐藏或屏蔽了' : '这段时间内没有浏览记录');
   }
-  renderStatus(query, matchCount);
+  if (!state.loading) renderStatus(query, matchCount);
 }
 
 function renderRow({ entry, rank }, index, maxScore) {
@@ -215,6 +225,7 @@ function syncControls() {
 }
 
 function setLoading(on) {
+  state.loading = on;
   els.scroller.classList.toggle('loading', on);
   if (on) {
     els.status.textContent = '正在读取历史记录…';
@@ -229,6 +240,7 @@ function showEmpty(text) {
 
 function showFatal(err) {
   console.error(err);
+  state.loading = false;
   els.scroller.classList.remove('loading');
   els.list.replaceChildren();
   state.rows = [];
@@ -267,6 +279,7 @@ function bindEvents() {
   });
   els.scroller.addEventListener('scroll', closeMenu, { passive: true });
   document.addEventListener('keydown', onKeyDown);
+  window.addEventListener('pagehide', () => state.loadController?.abort());
 }
 
 function bindSegmented(container, name, after) {
